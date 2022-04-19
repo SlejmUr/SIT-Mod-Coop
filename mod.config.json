@@ -1,6 +1,6 @@
 {
 	"name": "VVCoop",
-	"author": "PauloVV",
+	"author": "Paulov",
 	"version": "1.0.0",
 	"license": "MIT",
 	"src": {
@@ -11,6 +11,9 @@
 		"enable" : true
 	},
 	"ExperienceMiniMod": {
+		"enable" : true
+	},
+	"HealthMiniMod": {
 		"enable" : true
 	},
 	"Quests": {

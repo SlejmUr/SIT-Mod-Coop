@@ -15,3 +15,8 @@ The **SERVER** mod does the following:
 - Changes the location data for Labs to make the PMC bots spawn as regular bots, not bosses (fixing laser beam cheat bots)
 - Changes bot health data to ensure they all match your character's health rather than use an artificial boost
 - Changes bot health head to 1 so that the player can kill AI easily with headshots when unarmoured
+- Allows additions and modifications to Quests see [here](https://github.com/pargsoft/TarkovCoopServerMod/tree/master/src/db/quests)
+
+## Quests
+- All quest information can be found [here](https://github.com/pargsoft/TarkovCoopServerMod/tree/master/src/db/quests)
+
