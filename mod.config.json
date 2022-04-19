@@ -1,0 +1,17 @@
+{
+	"name": "VVCoop",
+	"author": "PauloVV",
+	"version": "1.0.0",
+	"license": "MIT",
+	"src": {
+		"src/script.js": "TamperModLoad"
+	},
+	"required": [],
+	"BotDifficultyMiniMod": {
+		"enable" : true
+	},
+	"ExperienceMiniMod": {
+		"enable" : true
+	}
+
+}
