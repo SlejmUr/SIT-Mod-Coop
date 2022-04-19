@@ -1,0 +1,96 @@
+[
+    {
+      "_id": "5936d90786f7742b1420b111",
+      "canShowNotificationsInGame": true,
+      "conditions": {
+        "AvailableForFinish": [
+          {
+            "_parent": "CounterCreator",
+            "_props": {
+              "counter": {
+                "conditions": [
+                  {
+                    "_parent": "Kills",
+                    "_props": {
+                      "compareMethod": ">=",
+                      "id": "5967379786f774620e763ea8",
+                      "target": "Savage",
+                      "value": "1"
+                    }
+                  },
+                  {
+                    "_parent": "Location",
+                    "_props": {
+                      "id": "5976026886f7745659461f2b",
+                      "target": ["bigmap"]
+                    }
+                  }
+                ],
+                "id": "5967379186f77463860dadd5"
+              },
+              "doNotResetIfCounterCompleted": false,
+              "dynamicLocale": false,
+              "id": "5967379186f77463860dadd6",
+              "index": 0,
+              "oneSessionOnly": false,
+              "parentId": "",
+              "type": "Elimination",
+              "value": "5",
+              "visibilityConditions": []
+            },
+            "dynamicLocale": false
+          }
+        ],
+        "AvailableForStart": [
+          {
+            "_parent": "Level",
+            "_props": {
+              "compareMethod": ">=",
+              "dynamicLocale": false,
+              "id": "5981a09b86f77455537a65ac",
+              "index": 0,
+              "parentId": "",
+              "value": 1,
+              "visibilityConditions": []
+            },
+            "dynamicLocale": false
+          }
+        ],
+        "Fail": []
+      },
+      "description": "5936d90786f7742b1420ba5b description",
+      "failMessageText": "5936d90786f7742b1420ba5b failMessageText",
+      "image": "/files/quest/icon/596b465486f77457ca186188.jpg",
+      "instantComplete": false,
+      "isKey": false,
+      "location": "56f40101d2720b2a4d8b45d6",
+      "name": "You're a Cunt!",
+      "note": "5936d90786f7742b1420ba5b note",
+      "restartable": false,
+      "rewards": {
+        "Fail": [],
+        "Started": [],
+        "Success": [
+          {
+            "id": "5fe305df8a67d12f5f24c8aa",
+            "index": 0,
+            "type": "Experience",
+            "value": "9999"
+          },
+          {
+            "id": "60c89c0c80b2027f403dd992",
+            "index": 1,
+            "target": "54cb50c76803fa8b248b4571",
+            "type": "TraderStanding",
+            "value": "0.02"
+          }
+        ]
+      },
+      "secretQuest": false,
+      "startedMessageText": "5936d90786f7742b1420ba5b startedMessageText",
+      "successMessageText": "5936d90786f7742b1420ba5b successMessageText",
+      "templateId": "5936d90786f7742b1420ba5b",
+      "traderId": "54cb50c76803fa8b248b4571",
+      "type": "Elimination"
+    }
+]

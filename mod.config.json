@@ -12,6 +12,10 @@
 	},
 	"ExperienceMiniMod": {
 		"enable" : true
+	},
+	"Quests": {
+		"enable": true,
+		"enableByFolder": ["paulov", "richyg"]
 	}
 
 }
