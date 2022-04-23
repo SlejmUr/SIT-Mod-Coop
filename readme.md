@@ -1,4 +1,4 @@
-Made By Paulov
+# Made By Paulov and the Team
 
 ## Summary
 This is the **SERVER** modification of JET / AE to allow Coop / MP and multiple other mods to work

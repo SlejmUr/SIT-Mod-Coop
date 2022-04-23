@@ -38,8 +38,8 @@
     },
     {
       "number": 0,
-      "time_min": 35,
-      "time_max": 45,
+      "time_min": 15,
+      "time_max": 20,
       "slots_min": 1,
       "slots_max": 2,
       "SpawnPoints": "BotZone",
@@ -50,8 +50,8 @@
     },
     {
       "number": 2,
-      "time_min": 50,
-      "time_max": 60,
+      "time_min": 25,
+      "time_max": 30,
       "slots_min": 1,
       "slots_max": 2,
       "SpawnPoints": "BotZone",
@@ -62,8 +62,8 @@
     },
     {
       "number": 3,
-      "time_min": 65,
-      "time_max": 85,
+      "time_min": 35,
+      "time_max": 40,
       "slots_min": 2,
       "slots_max": 3,
       "SpawnPoints": "BotZone",
@@ -2183,7 +2183,19 @@
     "BossEscortDifficult": "normal",
     "BossEscortAmount": "1",
     "Time": 0
-  }],
+  },
+  {
+    "BossName": "pmcBot",
+    "BossChance": 100,
+    "BossZone": "BotZone",
+    "BossPlayer": true,
+    "BossDifficult": "normal",
+    "BossEscortType": "pmcBot",
+    "BossEscortDifficult": "normal",
+    "BossEscortAmount": "3",
+    "Time": 5
+  }
+],
   "Id": "factory4_day",
   "_Id": "55f2d3fd4bdc2d5f408b4567",
   "Loot": [],

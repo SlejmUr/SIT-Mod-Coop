@@ -3,6 +3,8 @@ const { NotifierService } = require('../../../../src/classes/notifier');
 const { Server, server } = require('../../../../core/server/server');
 const { responses } = require('../../../../src/functions/response');
 const { vvMatcher, VVAccount, VVBots, VVMatch } = require('./Classes/Classes');
+const { AccountServer } = require('../../../../src/classes/account');
+const { FriendshipController } = require('./Classes/FriendshipController');
 const serverUrl = server.getBackendUrl();
 const serverIp = server.getIp();
 const wsServerIp = server.getIp();
@@ -110,7 +112,7 @@ initResponseOverrides = function() {
 			playersSpawnPoint: {}
 		};
 
-		let myAccount = account_f.handler.getAllAccounts().find(x=>x._id == sessionID);
+		let myAccount = AccountServer.getAllAccounts().find(x=>x._id == sessionID);
 		let thisServer = vvMatcher.getServerByGroupId(sessionID);
 
 		// add the host
@@ -645,11 +647,11 @@ initResponseOverrides = function() {
 	responses.staticResponses["/client/game/profile/list"] =
 	(url, info, sessionID) => {
 		// the best place to update health because its where profile is updating in client also!!!
-		if (!account_f.handler.isWiped(sessionID) && profile_f.handler.profileAlreadyCreated(sessionID)) {
+		if (!AccountServer.isWiped(sessionID) && profile_f.handler.profileAlreadyCreated(sessionID)) {
 		  health_f.handler.healOverTime(profile_f.handler.getPmcProfile(sessionID), info, sessionID);
 		}
 
-		// let allAccounts = account_f.handler.getAllAccounts();
+		// let allAccounts = AccountServer.getAllAccounts();
 
 		// Fix SalesSum issue (needs to be pushed to JET)
 		let allProfiles = profile_f.handler.getCompleteProfile(sessionID);
@@ -706,7 +708,7 @@ initResponseOverrides = function() {
         console.log("loading singular Profile for " + info);
 
         // console.log(sessionID);
-		let acc = account_f.handler.getAllAccounts().find(x => x._id == info);
+		let acc = AccountServer.getAllAccounts().find(x => x._id == info);
 		if(acc == undefined || acc == null) {
 			console.log("Singular Profile doesn't exist for " + info);
 			return JSON.stringify(null);
@@ -759,12 +761,29 @@ initResponseOverrides = function() {
 
 		var result = { Friends: [], Ignore: [], InIgnoreList: [] };
 
-		let allOtherAccounts = account_f.handler.getAllAccounts()
-		.filter(x=>x._id != sessionID);
-		result.Friends = allOtherAccounts;
+
+		result.Friends = FriendshipController.getFriends(sessionID);
+
+		console.log(result);
+		// let allOtherAccounts = AccountServer.getAllAccounts()
+		// .filter(x=>x._id != sessionID);
+		// result.Friends = allOtherAccounts;
+
+
 		return response_f.getBody(result);
        
 	} 
+
+	responses.staticResponses["/client/friend/delete"] =
+	 (url, info, sessionID) => {
+
+		console.log(info);
+		console.log(sessionID);
+		FriendshipController.deleteFriend(sessionID, info);
+       
+		return response_f.nullResponse();
+	} 
+   
    
 
     /// ----------------------------------------------------

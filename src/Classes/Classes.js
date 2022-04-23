@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { AccountServer } = require('../../../../../src/classes/account');
 
 class VVMatch {
 	constructor() {
@@ -68,7 +69,7 @@ class VVMatch {
 
 		// get all players, filter out self and anyone not here
 		let availablePlayers = 
-			account_f.handler
+			AccountServer
 			.getAllAccounts()
 			.filter(x=>x._id != sessionID);
 			// Turn these off when testing Server functionality
@@ -106,7 +107,7 @@ class VVMatch {
 		if(vvMatcher.groups[sessionID] == undefined)
 			return null;
 	
-		let fromAccount = account_f.handler.getAllAccounts()
+		let fromAccount = AccountServer.getAllAccounts()
 		.find(x=>x._id == sessionID);
 
 		vvMatcher.invites.push(
@@ -165,7 +166,7 @@ class VVMatch {
 			players: []
 		}
 
-		let myAccounts = account_f.handler.getAllAccounts()
+		let myAccounts = AccountServer.getAllAccounts()
 		.filter(x=>x.aid = sessionID);
 		for(let index in myAccounts) {
 			let acc = myAccounts[index];
@@ -182,12 +183,12 @@ class VVMatch {
 	}
 
 	groupSearchStart(sessionID, info) {
-		let myAccount = account_f.handler.find(sessionID);
+		let myAccount = AccountServer.find(sessionID);
 		if(myAccount.matching === undefined) myAccount.matching = {};
 		myAccount.matching.lookingForGroup = true;
 	}
 	groupSearchStop(sessionID, info) {
-		let myAccount = account_f.handler.find(sessionID);
+		let myAccount = AccountServer.find(sessionID);
 		if(myAccount.matching === undefined) myAccount.matching = {};
 		myAccount.matching.lookingForGroup = false;
 	}
@@ -203,10 +204,10 @@ class VVMatch {
 				let lastInvite = myInvites[lastInviteIndex];
 				if(lastInvite !== undefined) {
 					let fromAccount	= 
-					account_f.handler.getAllAccounts().find(x=>x._id == lastInvite.from);
+					AccountServer.getAllAccounts().find(x=>x._id == lastInvite.from);
 
 					let toAccount = 
-					account_f.handler.getAllAccounts().find(x=>x._id == sessionID);
+					AccountServer.getAllAccounts().find(x=>x._id == sessionID);
 
 					return lastInvite;
 				}
@@ -223,10 +224,10 @@ class VVMatch {
 		let lastInvite = vvMatcher.getLastInvite(sessionID);
 		if(lastInvite !== undefined) {
 			let fromAccount	= 
-			account_f.handler.getAllAccounts().find(x=>x._id == lastInvite.from);
+			AccountServer.getAllAccounts().find(x=>x._id == lastInvite.from);
 
 			let toAccount = 
-			account_f.handler.getAllAccounts().find(x=>x._id == sessionID);
+			AccountServer.getAllAccounts().find(x=>x._id == sessionID);
 
 			return response_f.noBody(lastInvite);
 		}
@@ -258,11 +259,12 @@ getAllAccounts() {
   let fullyLoadedAccounts = [];
 
     const profileFolders = fs.readdirSync(`user/profiles/`);
-console.log(profileFolders);
+// console.log(profileFolders);
 
-	let ids = Object.keys(account_f.handler.accounts);
-	for (let i in ids) {
-		let id = ids[i];
+	// let ids = Object.keys(AccountServer.accounts);
+	// for (let i in ids) {
+	for (const id of profileFolders) {
+		// let id = ids[i];
 		if (!fileIO.exist(`user/profiles/${id}/character.json`)) continue;
 		let character = fileIO.readParsed(`user/profiles/${id}/character.json`);
 		
@@ -285,122 +287,20 @@ console.log(profileFolders);
 		obj.Info.MemberCategory = character.Info.MemberCategory;
 		obj.Info.Ignored = false;
 		obj.Info.Banned = false;
-		// obj.PlayerVisualRepresentation = {
-		// 	Info: character.Info,
-		// 	Customization: character.Customization,
-		// 	// Equipment: character.Inventory.Equipment
-		// 	// Equipment: character.Inventory
-		// };
-		obj.PlayerVisualRepresentation = profile;
+		obj.PlayerVisualRepresentation = {
+			Info: obj.Info,
+			Customization: character.Customization,
+			// Equipment: character.Inventory.Equipment
+			// Equipment: character.Inventory
+		};
+		// obj.PlayerVisualRepresentation = profile;
 		fullyLoadedAccounts.push(obj);
 	}
 
-	console.log(fullyLoadedAccounts);
+	// console.log(fullyLoadedAccounts);
 	return fullyLoadedAccounts;
 }
 
-getFriends(sessionID) {
-	// console.log("getFriends");
-	let friendAccounts = [];
-
-	let allAccounts = this.getAllAccounts();
-	let myAccount = this.find(sessionID);
-	if(myAccount === undefined)
-	  return null;
-
-   
-	for (let i in myAccount.friends) {
-
-		let id = myAccount.friends[i];
-		let acc = allAccounts.find(x => x._id == id);
-
-		// let id = myAccount.friends[i];
-		// if (!fileIO.exist(`user/profiles/${id}/character.json`)) continue;
-		// let character = fileIO.readParsed(`user/profiles/${id}/character.json`);
-		
-		// let obj = {
-		// 	Info: {}
-		// };
-		// obj._id = character.aid;
-		// obj.Level = character.Info.Level;
-		// obj.lookingGroup = true;
-		// obj.Info.Nickname = character.Info.Nickname;
-		// obj.Info.Side = character.Info.Side;
-		// obj.Info.Level = character.Info.Level;
-		// obj.Info.MemberCategory = character.Info.MemberCategory;
-		// obj.Info.Ignored = false;
-		// obj.Info.Banned = false;
-		// obj.PlayerVisualRepresentation = {
-		// 	Info: character.Info,
-		// 	Customization: character.Customization,
-		// 	// Equipment: character.Inventory
-		// }
-		// ;
-		// // console.log("getFriends:" + JSON.stringify(obj));
-
-		friendAccounts.push(acc);
-	}
-
-	return friendAccounts;
-}
-
-getFriendRequestInbox(sessionID) {
-  var acc = account_f.handler.find(sessionID);
-  if(acc.friendRequestInbox === undefined) {
-	acc.friendRequestInbox = [];
-  } 
-
-  return acc.friendRequestInbox.filter(x => x.Date != null);
-}
-
-getFriendRequestOutbox(sessionID) {
-  var acc = account_f.handler.find(sessionID);
-  if(acc.friendRequestOutbox === undefined) {
-	acc.friendRequestOutbox = [];
-  } 
-
-  return acc.friendRequestOutbox;
-}
-
-addFriendRequest(sessionID, toID) {
-	var acc = account_f.handler.find(sessionID);
-	var toAcc = account_f.handler.find(toID);
-
-	console.log("from");
-	console.log(acc);
-	console.log("to");
-	console.log(toAcc);
-
-	if(acc.friends === undefined) {
-	  acc.friends = [];
-	}
-
-	if(acc.friendRequestOutbox === undefined) {
-	  acc.friendRequestOutbox = [];
-	}
-
-	if(toAcc.friends === undefined) {
-	  toAcc.friends = [];
-	}
-
-	if(toAcc.friendRequestInbox === undefined) {
-	  toAcc.friendRequestInbox = [];
-	}
-
-	// let nFriendRequest = new friendRequest();
-	// // accFull = getAllAccounts().find(x => x._id == sessionID);
-	// // toAccFull = getAllAccounts().find(x => x._id == toID);
-
-	// acc.friendRequestOutbox.push(nFriendRequest);
-	// toAcc.friendRequestInbox.push(nFriendRequest);
-
-	acc.friends.push(toID);
-	toAcc.friends.push(acc);
-	}
-
-	addFriend(sessionID, info) {
-
-	}
 
 }
 

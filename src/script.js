@@ -14,6 +14,9 @@ const serverIp = server.getIp();
 // const wsServerIp = server.getIp();
 // const wsServerPort = server.getPort() + 2;
 // const netSocketServerPort = wsServerPort + 1;
+const { customQuests } = require('./customQuests');
+const { customItems } = require('./customItems');
+const { AccountServer } = require('../../../../src/classes/account');
 
 const wsServerUrl = `ws://${server.getIp()}:${server.getPort()}`;
 
@@ -150,6 +153,9 @@ initLocationAndLootOverrides = function() {
 };
 
 exports.mod = (mod_info) => {
+
+	const parentDir = process.cwd() + "/" + "user/mods/VVCoop_1.0.0/"
+
     logger.logInfo("[MOD] TarkovCoop. Loading...");
 	// logger.logInfo(JSON.stringify(mod_info));
 	
@@ -164,13 +170,14 @@ exports.mod = (mod_info) => {
 
 	// New Account Handler Class
 	let vvAccounter = new VVAccount();
-	account_f.handler.getAllAccounts = vvAccounter.getAllAccounts;
-	account_f.handler.getFriends = vvAccounter.getFriends;
-	account_f.handler.addFriendRequest = vvAccounter.addFriendRequest;
-	account_f.handler.addFriend = vvAccounter.addFriend;
-	account_f.handler.getFriendRequestOutbox = vvAccounter.getFriendRequestOutbox;
-	account_f.handler.getFriendRequestInbox = vvAccounter.getFriendRequestInbox;
-	if(account_f.handler.getAllAccounts === vvAccounter.getAllAccounts)
+	// account_f.handler.getAllAccounts = vvAccounter.getAllAccounts;
+	AccountServer.getAllAccounts = vvAccounter.getAllAccounts;
+	AccountServer.getFriends = vvAccounter.getFriends;
+	AccountServer.addFriendRequest = vvAccounter.addFriendRequest;
+	AccountServer.addFriend = vvAccounter.addFriend;
+	AccountServer.getFriendRequestOutbox = vvAccounter.getFriendRequestOutbox;
+	AccountServer.getFriendRequestInbox = vvAccounter.getFriendRequestInbox;
+	if(AccountServer.getAllAccounts === vvAccounter.getAllAccounts)
 		logger.logSuccess("[MOD] TarkovCoop; Account Override Successful");
 	else {
 		logger.logError("[MOD] TarkovCoop; Account Override FAILED!");
@@ -179,11 +186,11 @@ exports.mod = (mod_info) => {
 	// 
 	// Apply Bot Changes
 
-	const modConfig = JSON.parse(fs.readFileSync('user/mods/VVCoop_1.0.0/mod.config.json'));
+	const modConfig = JSON.parse(fs.readFileSync(parentDir + 'mod.config.json'));
 
 	if(modConfig.BotDifficultyMiniMod.enable === true) {
 
-		var data = fs.readFileSync('user/mods/VVCoop_1.0.0/src/db/bots/normal.json');
+		var data = fs.readFileSync(parentDir + 'src/db/bots/normal.json');
 		data = JSON.parse(data);
 		global._database.bots.assault.difficulty.easy = data;
 		global._database.bots.assault.difficulty.normal = data;
@@ -303,43 +310,10 @@ exports.mod = (mod_info) => {
 		});
 	}
 
-	if(modConfig.Quests.enable === true) {
-		const numberOfQuestsBeforeMod = global._database.quests.length;
-		let numberOfQuestsOverwritten = 0;
-		let numberOfQuestsNew = 0;
-		// logger.logInfo("[MOD] TarkovCoop; No. of Quests: " + numberOfQuestsBeforeMod);
 
-		for(const folder of modConfig.Quests.enableByFolder) {
-			logger.logInfo("[MOD] TarkovCoop; QUEST: Loading " + folder);
-			const questData = JSON.parse(fs.readFileSync(`user/mods/VVCoop_1.0.0/src/db/quests/${folder}/quests.json`, 'utf8'));
-			if(questData !== undefined) {
-				if(questData.length > 0) {
-					logger.logInfo("[MOD] TarkovCoop; QUEST: Data found " + folder);
-					for(const quest of questData) {
-						const existingQuestIndex = global._database.quests.findIndex(x=>x._id == quest._id);
-						if(existingQuestIndex !== -1) {
-							const existingQuest = global._database.quests[existingQuestIndex];
-							if(existingQuest) {
-								numberOfQuestsOverwritten++;
-							}
-						}
-						else {
-							global._database.quests.push(quest);
-							numberOfQuestsNew++;
-						}
-					}
-				}
-			}
-		}
-		
-		if(numberOfQuestsNew > 0) {
-			logger.logSuccess(`[MOD] TarkovCoop; ${numberOfQuestsNew} New Quests`);
-		}
-		if(numberOfQuestsOverwritten > 0) {
-			logger.logSuccess(`[MOD] TarkovCoop; ${numberOfQuestsOverwritten} Overwritten Quests`);
-		}
-	}
-
+customItems.LoadItems();
+	
+customQuests.LoadCustomQuests();
 
 	// Setting up websocket
 	// const webSocketServer = new WebSocket.Server({
