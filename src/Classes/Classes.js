@@ -17,10 +17,12 @@ class VVMatch {
 
 	joinServerByGroupId(groupId, accountId) { 
 
-		let thisServer = vvMatcher.getServerByGroupId(groupId);
-		
+		const thisServer = vvMatcher.getServerByGroupId(groupId);
+		if(thisServer === undefined)
+			return undefined;
+
 		// add me
-		thisServer.players[groupId] = {
+		thisServer.players[accountId] = {
 			isHost: false,
 			accountId: accountId,
 			profileId: "pmc" + accountId,
@@ -38,6 +40,7 @@ class VVMatch {
 			let s = this.servers[iServer];
 			for(let iPlayer in s.players) {
 				let p = s.players[iPlayer];
+				console.log(p);
 				if(p.accountId == sessionID) {
 					return this.servers[iServer];
 				}
@@ -46,19 +49,6 @@ class VVMatch {
 		return undefined;
 	}
 
-	sendDataAboutOccurance(serverGroupId, isBot, data) {
-		let server = vvMatcher.getServerByGroupId(serverGroupId);
-		if(server !== undefined) {
-			let personToAffect = isBot ? server.bots[data.accountId] : server.players[data.accountId];
-			if(personToAffect !== undefined) {
-				if(personToAffect.occurances === undefined) {
-					personToAffect.occurances = [];
-				}
-
-				personToAffect.occurances.push(data);
-			}
-		}
-	}
 
 	// Group Players Screen
 	// Note the change here to include SessionID, make sure to add that to the response
@@ -89,20 +79,13 @@ class VVMatch {
 		vvMatcher.matching[sessionID].status = info;
 		vvMatcher.matching[sessionID].status.dateUpdated = Date.now();
 
-		// console.log("My PMC Profile");
-		// console.log(profile_f.handler.getPmcProfile(sessionID));
-		//  console.log("Available Players");
-		//  console.log(availablePlayers);
-		//  console.log(vvMatcher.matching[sessionID]);
-			
 		// Callback only requires "players" list
         return {"players": availablePlayers};
     }
 
 	sendInvite = function(info, sessionID) {
-		// console.log("HAAALLLLLO");
-		console.log(sessionID);
-		console.log(JSON.stringify(info));
+		// console.log(sessionID);
+		// console.log(JSON.stringify(info));
 	
 		if(vvMatcher.groups[sessionID] == undefined)
 			return null;

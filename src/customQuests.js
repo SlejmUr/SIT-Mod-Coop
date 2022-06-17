@@ -2,9 +2,7 @@ const fs = require('fs');
 
 class customQuests
 {
-    static LoadCustomQuests() {
-
-	    const modConfig = JSON.parse(fs.readFileSync('user/mods/VVCoop_1.0.0/mod.config.json'));
+    static LoadCustomQuests(modConfig) {
 
         if(modConfig.Quests.enable === true) {
             const numberOfQuestsBeforeMod = global._database.quests.length;
@@ -14,7 +12,7 @@ class customQuests
     
             for(const folder of modConfig.Quests.enableByFolder) {
                 logger.logInfo("[MOD] TarkovCoop; QUEST: Loading " + folder);
-                const questData = JSON.parse(fs.readFileSync(`user/mods/VVCoop_1.0.0/src/db/quests/${folder}/quests.json`, 'utf8'));
+                const questData = JSON.parse(fs.readFileSync(`${__dirname}/db/quests/${folder}/quests.json`, 'utf8'));
                 if(questData !== undefined) {
                     if(questData.length > 0) {
                         logger.logInfo("[MOD] TarkovCoop; QUEST: Data found " + folder);

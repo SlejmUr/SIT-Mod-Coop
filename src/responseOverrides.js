@@ -4,16 +4,27 @@ const { Server, server } = require('../../../../core/server/server');
 const { responses } = require('../../../../src/functions/response');
 const { vvMatcher, VVAccount, VVBots, VVMatch } = require('./Classes/Classes');
 const { AccountServer } = require('../../../../src/classes/account');
-const { FriendshipController } = require('./Classes/FriendshipController');
+const { FriendshipController } = require('../../../../src/Controllers/FriendshipController');
+const { ResponseController } = require('../../../../src/Controllers/ResponseController');
+const { ConfigController } = require('../../../../src/Controllers/ConfigController');
 const serverUrl = server.getBackendUrl();
 const serverIp = server.getIp();
 const wsServerIp = server.getIp();
 const wsServerPort = server.getPort() + 2;
 
+const urlPrefixes = {
+	"location": "/client/location/",
+	"group": "/client/match/group/",
+	"groupServer": "/client/match/group/server/",
+	"groupInvite": "/client/match/group/invite/"
+}
 
 initResponseOverrides = function() {
 
-	responses.staticResponses["/client/location/getLocalloot"] = 
+	// Override Loot Generation. 
+	// If Server: Generate as normal
+	// If Client: Use the same as server
+	ResponseController.overrideRoute("/client/location/getLocalloot", 
 	(url, info, sessionID) => {
 		let location_name = "";
 		const params = new URL(serverUrl + url).searchParams;
@@ -23,13 +34,12 @@ initResponseOverrides = function() {
 		  location_name = params.get("locationId");
 		}
 
-		let serverIAmIn = vvMatcher.getServerIAmIn(sessionID);
+		const serverIAmIn = vvMatcher.getServerIAmIn(sessionID);
 		console.log("serverIAmIn");
 		console.log(serverIAmIn);
 
-		let d = location_f.handler.get(location_name);
+		const d = location_f.handler.get(location_name);
 		if(sessionID != undefined) {
-			console.log(info);
 			let serverViaHost = vvMatcher.getServerByGroupId(sessionID);
 			// let serverViaClient = vvMatcher.servers // vvMatcher.getServerByGroupId(info.groupId);
 			if(serverViaHost !== undefined) {
@@ -49,17 +59,12 @@ initResponseOverrides = function() {
 		}
 
 		return response_f.getBody(d);
-	  }
+	  });
 
+	 
 
-	responses.staticResponses["/singleplayer/settings/bot/maxCap"] = 
-	  (url, sessionID, info) => { console.log("/singleplayer/settings/bot/maxCap not properly handled"); };
-
-	
-
-
-	responses.staticResponses["/client/match/group/leave"] = 
-	  (url, sessionID, info) => { console.log("/client/match/group/leave"); };
+	  ResponseController.overrideRoute("/client/match/group/leave", 
+	  (url, sessionID, info) => { console.log("/client/match/group/leave"); });
 
 	
 
@@ -99,10 +104,6 @@ initResponseOverrides = function() {
 		if(vvMatcher.servers === undefined)
 			vvMatcher.servers = {};
 
-		let existingServer = vvMatcher.getServerByGroupId(sessionID);
-		if(existingServer !== undefined)
-			delete existingServer;
-		
 		vvMatcher.servers[sessionID] = {
 			ip: info,
 			status: "LOADING",
@@ -115,27 +116,43 @@ initResponseOverrides = function() {
 		let myAccount = AccountServer.getAllAccounts().find(x=>x._id == sessionID);
 		let thisServer = vvMatcher.getServerByGroupId(sessionID);
 
-		// add the host
-		// thisServer.players[sessionID] = {
-		// 	isHost: true,
-		// 	accountId: sessionID,
-		// 	profileId: "pmc" + sessionID,
-		// 	isPlayer: true,
-		// 	isBot: false
-		// };
-
 		console.log("New Server Started for AID " + sessionID + " on IP " + info);
 
     	return JSON.stringify(vvMatcher.servers[sessionID]);
 	};
 
-	responses.staticResponses["/client/match/group/server/join"] = 
-	  (url, info, sessionID) => { 
+	ResponseController.Routes.push(
+	{
+			url: "/client/match/group/server/join",
+			action:
+		(url, info, sessionID) => { 
 
-		console.log(info);
-		console.log(sessionID);
-		vvMatcher.joinServerByGroupId(info, sessionID);
-	};
+			console.log(info);
+			console.log(sessionID);
+
+			let groupId = info;
+			if(info.groupId !== undefined)
+				groupId = info.groupId;
+
+			const thisServer = vvMatcher.getServerByGroupId(groupId);
+			vvMatcher.joinServerByGroupId(info, sessionID);
+			return JSON.stringify(thisServer);
+
+		}
+	});
+
+	ResponseController.Routes.push(
+		{
+			url: "/client/match/group/server/getGameServerIp",
+			action:
+	(url, sessionID, info) => { 
+		for(let itemIdOfServer in vvMatcher.servers) {
+			if(vvMatcher.servers[itemIdOfServer] !== undefined && vvMatcher.servers[itemIdOfServer].Loot !== undefined) {
+				return JSON.stringify(vvMatcher.servers[itemIdOfServer].ip);
+			}
+		}
+	  }
+	});
 
 	responses.staticResponses["/client/match/group/server/status"] = 
 	  (url, info, sessionID) => { 
@@ -190,13 +207,19 @@ initResponseOverrides = function() {
 		return JSON.stringify(existingServer.playersSpawnPoint);
 	};
 
-	responses.staticResponses["/client/match/group/server/parity"] = 
+	ResponseController.RoutesToNotLog.push("/client/match/group/server/parity");
+	ResponseController.RoutesToNotLog.push("/client/match/group/server/parity/players");
+	ResponseController.RoutesToNotLog.push("/client/match/group/server/parity/bots");
+
+	ResponseController.Routes.push(
+		{ url: "/client/match/group/server/parity",
+		action: 
 	  (url, info, sessionID) => { 
 
-
+		console.log(info);
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
 		if(existingServer == null) {
-			return response_f.getBody("ERROR");
+			return JSON.stringify("ERROR");
 		}
 
 		let playerDifference = false;
@@ -268,11 +291,133 @@ initResponseOverrides = function() {
 		}
 
 		return JSON.stringify(null);
+	}
+});
+
+ResponseController.Routes.push(
+	{ url: "/client/match/group/server/parity/bots",
+	action: 
+  (url, info, sessionID) => { 
+		return JSON.stringify(null);
+  }
+});
+
+ResponseController.Routes.push(
+	{ url: "/client/match/group/server/parity/players",
+	action: 
+  (url, info, sessionID) => { 
+
+
+	let existingServer = vvMatcher.getServerByGroupId(info.groupId);
+	if(existingServer == null) {
+		return response_f.getBody("ERROR");
+	}
+
+	let playerDifference = false;
+
+	// handle server telling us the players in it
+	if(info.playerData !== undefined) {
+		// if the server knows about more players (which is will to start with, update)
+		if(info.playerData.length > existingServer.players.length) {
+			existingServer.players = info.playerData;
+		}
+
+		// if server doesn't know about a client that has joined, update server
+		if(info.playerData.length < existingServer.players.length) {
+			playerDifference = true;
+		}
+	}
+
+	// client is checking they have the same number of players
+	if(info.playerKeys !== undefined) {
+		playerDifference = (info.playerKeys.length !== existingServer.players.length);
+	}
+
+	if(playerDifference) {
+		// console.log(`sending: ${existingServer.players.length} players`);
+		let responseJson = {
+			players: existingServer.players
+		};
+		return JSON.stringify(responseJson);
+	}
+
+	return JSON.stringify(null);
+}
+});
+
+ResponseController.RoutesToNotLog.push("/client/match/group/server/parity/dead/post");
+
+ResponseController.Routes.push(
+	{ url: "/client/match/group/server/parity/dead/post",
+	action: 
+  (url, info, sessionID) => { 
+
+	let groupId = info.groupId !== undefined ? info.groupId : undefined;
+	if (groupId === undefined && info.length !== undefined && info.length > 0)
+		groupId = info[0].groupId;
+
+	let existingServer = {};
+	for(let server in vvMatcher.servers) {
+		existingServer = vvMatcher.servers[server];
+	}
+
+	// handle new dead data
+	if(info !== undefined) {
+		if(info.length !== undefined && info.length > 0) {
+			// console.log(info);
+			if(existingServer.dead === undefined)
+				existingServer.dead = [];
+
+			for(const index in info) {
+				existingServer.dead.push(info[index]);
+				console.log("Adding one more dead, totalling " + existingServer.dead.length);
+				console.log(info);
+			}
+		}
+		else {
+			console.error("info is not array in /client/match/group/server/parity/dead/post")
+			console.log(info);
+		}
+	}
+	else {
+
+	}
+
+	return JSON.stringify("OK");
+	// return null;
+}
+});
+
+ResponseController.RoutesToNotLog.push("/client/match/group/server/parity/dead/get");
+
+ResponseController.Routes.push(
+	{ url: "/client/match/group/server/parity/dead/get",
+	action: 
+  (url, info, sessionID) => { 
+	// console.log(info);
+
+	let groupId = info.groupId !== undefined ? info.groupId : undefined;
+	if (groupId === undefined && info.length !== undefined && info.length > 0)
+		groupId = info[0].groupId;
+
+		let existingServer = {};
+	for(let server in vvMatcher.servers) {
+		existingServer = vvMatcher.servers[server];
+	}
+
+	let responseJson = {
+		dead: existingServer.dead
 	};
+	return JSON.stringify(responseJson);
+	// return null;
+}
+});
 
 	responses.staticResponses["/client/match/group/server/players/spawn"] = 
 	  (url, info, sessionID) => { 
 
+		console.log(info);
+		
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
 		if(existingServer == null) {
 			return JSON.stringify("ERROR");
@@ -287,7 +432,10 @@ initResponseOverrides = function() {
 		return JSON.stringify("OK");
 	};
 
-	responses.staticResponses["/client/match/group/server/bots/spawn"] = 
+	ResponseController.Routes.push(
+		{
+			url: "/client/match/group/server/bots/spawn",
+			action:
 	  (url, info, sessionID) => { 
 
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
@@ -299,14 +447,14 @@ initResponseOverrides = function() {
 			existingServer.bots = [];
 		}
 
-		console.log(info);
+		// console.log(info);
 		// if(existingServer.bots.find(x=>x.accountId == info.accountId) === undefined) {
 			existingServer.bots.push(info);
-			logger.logInfo("Added one more bot " + info.accountId + " server " + info.groupId);
+			logger.logInfo("Added one more bot " + info.accountId + " server " + info.groupId + " totalling " + existingServer.bots.length);
 		// }
 
 		return JSON.stringify("OK");
-	};
+		}});
 
 
 	responses.staticResponses["/client/match/group/server/players/get"] = 
@@ -746,43 +894,43 @@ initResponseOverrides = function() {
           });
 	}
 
-    responses.staticResponses["/client/game/profile/select"] =
-	(url, info, sessionID) => {
+    // responses.staticResponses["/client/game/profile/select"] =
+	// (url, info, sessionID) => {
 
-        return response_f.getBody({
-            "status": "ok",
-            "notifier": NotifierService.getChannel(sessionID),
-            "notifierServer": NotifierService.getServer(sessionID)
-        });
-	}
+    //     return response_f.getBody({
+    //         "status": "ok",
+    //         "notifier": NotifierService.getChannel(sessionID),
+    //         "notifierServer": NotifierService.getServer(sessionID)
+    //     });
+	// }
 
-	responses.staticResponses["/client/friend/list"] =
-	 (url, info, sessionID) => {
+	// responses.staticResponses["/client/friend/list"] =
+	//  (url, info, sessionID) => {
 
-		var result = { Friends: [], Ignore: [], InIgnoreList: [] };
-
-
-		result.Friends = FriendshipController.getFriends(sessionID);
-
-		console.log(result);
-		// let allOtherAccounts = AccountServer.getAllAccounts()
-		// .filter(x=>x._id != sessionID);
-		// result.Friends = allOtherAccounts;
+	// 	var result = { Friends: [], Ignore: [], InIgnoreList: [] };
 
 
-		return response_f.getBody(result);
+	// 	result.Friends = FriendshipController.getFriends(sessionID);
+
+	// 	console.log(result);
+	// 	// let allOtherAccounts = AccountServer.getAllAccounts()
+	// 	// .filter(x=>x._id != sessionID);
+	// 	// result.Friends = allOtherAccounts;
+
+
+	// 	return response_f.getBody(result);
        
-	} 
+	// } 
 
-	responses.staticResponses["/client/friend/delete"] =
-	 (url, info, sessionID) => {
+	// responses.staticResponses["/client/friend/delete"] =
+	//  (url, info, sessionID) => {
 
-		console.log(info);
-		console.log(sessionID);
-		FriendshipController.deleteFriend(sessionID, info);
+	// 	console.log(info);
+	// 	console.log(sessionID);
+	// 	FriendshipController.deleteFriend(sessionID, info);
        
-		return response_f.nullResponse();
-	} 
+	// 	return response_f.nullResponse();
+	// } 
    
    
 

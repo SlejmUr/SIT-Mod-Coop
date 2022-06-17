@@ -154,9 +154,15 @@ initLocationAndLootOverrides = function() {
 
 exports.mod = (mod_info) => {
 
-	const parentDir = process.cwd() + "/" + "user/mods/VVCoop_1.0.0/"
+	// console.log(mod_info);
+	// const parentDir = process.cwd() + "/" + "user/mods/VVCoop_1.0.0/"
+	const modConfig = mod_info;
+	const modFolder = __dirname + "\\..\\"; // modfolder/
+	const parentDir = __dirname + "\\..\\"; // modfolder/
+	const srcDir = __dirname + "\\" ; // modfolder/src/
+	const dbDir = srcDir + "\\db\\"; // modfolder/src/db
 
-    logger.logInfo("[MOD] TarkovCoop. Loading...");
+    logger.logInfo(mod_info.name + ". Loading...");
 	// logger.logInfo(JSON.stringify(mod_info));
 	
 	// New Match Handler Class
@@ -172,11 +178,11 @@ exports.mod = (mod_info) => {
 	let vvAccounter = new VVAccount();
 	// account_f.handler.getAllAccounts = vvAccounter.getAllAccounts;
 	AccountServer.getAllAccounts = vvAccounter.getAllAccounts;
-	AccountServer.getFriends = vvAccounter.getFriends;
-	AccountServer.addFriendRequest = vvAccounter.addFriendRequest;
-	AccountServer.addFriend = vvAccounter.addFriend;
-	AccountServer.getFriendRequestOutbox = vvAccounter.getFriendRequestOutbox;
-	AccountServer.getFriendRequestInbox = vvAccounter.getFriendRequestInbox;
+	// AccountServer.getFriends = vvAccounter.getFriends;
+	// AccountServer.addFriendRequest = vvAccounter.addFriendRequest;
+	// AccountServer.addFriend = vvAccounter.addFriend;
+	// AccountServer.getFriendRequestOutbox = vvAccounter.getFriendRequestOutbox;
+	// AccountServer.getFriendRequestInbox = vvAccounter.getFriendRequestInbox;
 	if(AccountServer.getAllAccounts === vvAccounter.getAllAccounts)
 		logger.logSuccess("[MOD] TarkovCoop; Account Override Successful");
 	else {
@@ -186,29 +192,28 @@ exports.mod = (mod_info) => {
 	// 
 	// Apply Bot Changes
 
-	const modConfig = JSON.parse(fs.readFileSync(parentDir + 'mod.config.json'));
+	// const modConfig = JSON.parse(fs.readFileSync(parentDir + 'mod.config.json'));
+	// if(modConfig.BotDifficultyMiniMod.enable === true) {
 
-	if(modConfig.BotDifficultyMiniMod.enable === true) {
+	// 	var data = fs.readFileSync(parentDir + 'src/db/bots/normal.json');
+	// 	data = JSON.parse(data);
+	// 	global._database.bots.assault.difficulty.easy = data;
+	// 	global._database.bots.assault.difficulty.normal = data;
+	// 	global._database.bots.assault.difficulty.hard = data;
+	// 	global._database.bots.assault.difficulty.impossible = data;
 
-		var data = fs.readFileSync(parentDir + 'src/db/bots/normal.json');
-		data = JSON.parse(data);
-		global._database.bots.assault.difficulty.easy = data;
-		global._database.bots.assault.difficulty.normal = data;
-		global._database.bots.assault.difficulty.hard = data;
-		global._database.bots.assault.difficulty.impossible = data;
+	// 	global._database.bots.pmcbot.difficulty.easy = data;
+	// 	global._database.bots.pmcbot.difficulty.normal = data;
+	// 	global._database.bots.pmcbot.difficulty.hard = data;
+	// 	global._database.bots.pmcbot.difficulty.impossible = data;
 
-		global._database.bots.pmcbot.difficulty.easy = data;
-		global._database.bots.pmcbot.difficulty.normal = data;
-		global._database.bots.pmcbot.difficulty.hard = data;
-		global._database.bots.pmcbot.difficulty.impossible = data;
+	// 	global._database.bots.followerbully.difficulty.easy = data;
+	// 	global._database.bots.followerbully.difficulty.normal = data;
+	// 	global._database.bots.followerbully.difficulty.hard = data;
+	// 	global._database.bots.followerbully.difficulty.impossible = data;
 
-		global._database.bots.followerbully.difficulty.easy = data;
-		global._database.bots.followerbully.difficulty.normal = data;
-		global._database.bots.followerbully.difficulty.hard = data;
-		global._database.bots.followerbully.difficulty.impossible = data;
-
-		logger.logSuccess("[MOD] TarkovCoop; Applied Bot Difficulty data");
-	}		
+	// 	logger.logSuccess("[MOD] TarkovCoop; Applied Bot Difficulty data");
+	// }		
 
 	for(let b in global._database.bots) {
 		// if(global._database.bots[b].health.BodyParts.Head !== undefined) {
@@ -310,10 +315,31 @@ exports.mod = (mod_info) => {
 		});
 	}
 
+	const weatherDirectory = __dirname + "\\db\\weather";
+	// console.log(weatherDirectory);
+	//for(const index in global._database.weather) {
+	//	console.log(index);
+	let weatherIndex = 0;
+		for(const fileName of fs.readdirSync(weatherDirectory)) {
+			const weatherFilePath = weatherDirectory + "\\" + fileName;
+			fs.readFile(weatherFilePath, 'utf8' , (err, data) => {
+				if (err) {
+				console.error(err)
+				return;
+				}
+				data = JSON.parse(data);
+				global._database.weather[weatherIndex] = data;
+				// logger.logSuccess("[MOD] TarkovCoop; Applied " + weatherFilePath + " weather data");
 
-customItems.LoadItems();
+			});
+			weatherIndex++;
+		}
+	//}
+
+
+customItems.LoadItems(mod_info);
 	
-customQuests.LoadCustomQuests();
+customQuests.LoadCustomQuests(mod_info);
 
 	// Setting up websocket
 	// const webSocketServer = new WebSocket.Server({
