@@ -104,19 +104,22 @@ initResponseOverrides = function() {
 		if(vvMatcher.servers === undefined)
 			vvMatcher.servers = {};
 
-		vvMatcher.servers[sessionID] = {
-			ip: info,
-			status: "LOADING",
-			loot: {},
-			players: [],
-			bots: [],
-			playersSpawnPoint: {}
-		};
+			// THIS LINE IS FOR TESTING!!!!
+		// if(vvMatcher.servers[sessionID] === undefined) 
+			vvMatcher.servers[sessionID] = {
+				ip: info,
+				status: "LOADING",
+				loot: {},
+				players: [],
+				bots: [],
+				playersSpawnPoint: {}
+			};
 
 		let myAccount = AccountServer.getAllAccounts().find(x=>x._id == sessionID);
 		let thisServer = vvMatcher.getServerByGroupId(sessionID);
 
-		console.log("New Server Started for AID " + sessionID + " on IP " + info);
+		// console.log("New Server Started for AID " + sessionID + " on IP " + info);
+		console.log(`New Server Started for AID ${sessionID} on IP ${ResponseController.SessionIdToIpMap[sessionID]}`);
 
     	return JSON.stringify(vvMatcher.servers[sessionID]);
 	};
@@ -226,71 +229,74 @@ initResponseOverrides = function() {
 		let botDifference = false;
 
 		// handle server telling us the game time
-		if(info.gameTime !== undefined) {
-			existingServer.gameTime = info.gameTime;
-		}
+		// if(info.gameTime !== undefined) {
+		// 	existingServer.gameTime = info.gameTime;
+		// }
 
-		// handle server telling us the players in it
+		// // handle server telling us the players in it
 		if(info.playerData !== undefined) {
 			// if the server knows about more players (which is will to start with, update)
 			if(info.playerData.length > existingServer.players.length) {
-				existingServer.players = info.playerData;
-			}
-
-			// if server doesn't know about a client that has joined, update server
-			if(info.playerData.length < existingServer.players.length) {
-				playerDifference = true;
-			}
-		}
-
-		// handle server telling us the bots in it
-		if(info.botData !== undefined && info.botData.length != existingServer.bots.length) {
-			logger.logInfo("Received New Data from Server on Bots");
-			if(existingServer.bots.length > 0)
-			{
-				for(let itemIndex in info.botData) {
-					let b = info.botData[itemIndex];
-					console.log(b);
-					if(existingServer.bots.find(x=>x.accountId == b.accountId) === undefined) {
-						existingServer.bots.push(b);
-					}
+				for(const newPlayer of info.playerData) {
+					if(existingServer.players.findIndex(x => x.accountId === newPlayer.accountId) === -1) 
+						existingServer.players.push(newPlayer);
 				}
 			}
-			// existingServer.bots = info.botData;
+
+		// 	// if server doesn't know about a client that has joined, update server
+		// 	if(info.playerData.length < existingServer.players.length) {
+		// 		playerDifference = true;
+		// 	}
 		}
 
-		// client is checking they have the same number of bots
-		if(info.botKeys !== undefined) {
-			botDifference = (info.botKeys.length !== existingServer.bots.length);
-		}
+		// // handle server telling us the bots in it
+		// if(info.botData !== undefined && info.botData.length != existingServer.bots.length) {
+		// 	logger.logInfo("Received New Data from Server on Bots");
+		// 	if(existingServer.bots.length > 0)
+		// 	{
+		// 		for(let itemIndex in info.botData) {
+		// 			let b = info.botData[itemIndex];
+		// 			console.log(b);
+		// 			if(existingServer.bots.find(x=>x.accountId == b.accountId) === undefined) {
+		// 				existingServer.bots.push(b);
+		// 			}
+		// 		}
+		// 	}
+		// 	// existingServer.bots = info.botData;
+		// }
+
+		// // client is checking they have the same number of bots
+		// if(info.botKeys !== undefined) {
+		// 	botDifference = (info.botKeys.length !== existingServer.bots.length);
+		// }
 
 		// client is checking they have the same number of players
-		if(info.playerKeys !== undefined) {
-			playerDifference = (info.playerKeys.length !== existingServer.players.length);
-		}
+		// if(info.playerKeys !== undefined) {
+		// 	playerDifference = (info.playerKeys.length !== existingServer.players.length);
+		// }
 
-		if(playerDifference || botDifference) {
-			console.log(`sending: ${existingServer.players.length} players, ${existingServer.bots.length} bots`);
+		// if(playerDifference || botDifference) {
+			console.log(`sending: ${existingServer.players.length} players`);
 			let responseJson = {
 				players: existingServer.players,
-				bots: existingServer.bots,
-				gameTime: existingServer.gameTime
+				// bots: existingServer.bots,
+				// gameTime: existingServer.gameTime
 			};
 			return JSON.stringify(responseJson);
-		}
-		// its just the server telling us the game time
-		else if(info.gameTime !== undefined) {
-			// return JSON.stringify("{}");
-		}
-		// its the client requiring the game time
-		else {
-			// let responseJson = {
-			// 	gameTime: existingServer.gameTime
-			// };
-			// return JSON.stringify(responseJson);
-		}
+		// }
+		// // its just the server telling us the game time
+		// else if(info.gameTime !== undefined) {
+		// 	// return JSON.stringify("{}");
+		// }
+		// // its the client requiring the game time
+		// else {
+		// 	// let responseJson = {
+		// 	// 	gameTime: existingServer.gameTime
+		// 	// };
+		// 	// return JSON.stringify(responseJson);
+		// }
 
-		return JSON.stringify(null);
+		// return JSON.stringify(null);
 	}
 });
 

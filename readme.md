@@ -2,7 +2,7 @@
 
 ## Summary
 This is the **SERVER** modification of JET / AE to allow Coop / MP and multiple other mods to work
-[The Server Repo is found here](https://github.com/pargsoft/AECoopModServer) 
+[The Server Repo is found here](https://github.com/paulov-t/Tarkov-Server) 
 
 ## Where does this repo go?
 All mods must go in the server /user/mods/ folder

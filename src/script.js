@@ -146,17 +146,12 @@ function DeepCopy(obj) {
 }
 
 
-initLocationAndLootOverrides = function() {
-	
-//	logger.logSuccess("[MOD] TarkovCoop; Location & Loot Override Successful");
-
-};
-
 exports.mod = (mod_info) => {
 
 	// console.log(mod_info);
 	// const parentDir = process.cwd() + "/" + "user/mods/VVCoop_1.0.0/"
 	const modConfig = mod_info;
+	const gameMode = modConfig.Mode; // Can be Coop, PvP or PvPvE
 	const modFolder = __dirname + "\\..\\"; // modfolder/
 	const parentDir = __dirname + "\\..\\"; // modfolder/
 	const srcDir = __dirname + "\\" ; // modfolder/src/
@@ -168,7 +163,7 @@ exports.mod = (mod_info) => {
 	// New Match Handler Class
 	// let vvMatcher = new VVMatch();
 	//logger.logInfo(JSON.stringify(match_f.handler));
-	initLocationAndLootOverrides();
+	// initLocationAndLootOverrides();
 
 	initMatchOverrides();
 
@@ -240,26 +235,26 @@ exports.mod = (mod_info) => {
 				}
 			});
 
-			let botDifficultyFilePath = 'user/mods/VVCoop_1.0.0/src/db/bots/' + b + '/aiconfig.json';
-			fs.exists(botDifficultyFilePath, (e) => {
-				if(e) {
-					fs.readFile(botDifficultyFilePath, 'utf8' , (err, data) => {
-						if (err) {
-						console.error(err)
-						return;
-						}
-						data = JSON.parse(data);
+			// let botDifficultyFilePath = 'user/mods/VVCoop_1.0.0/src/db/bots/' + b + '/aiconfig.json';
+			// fs.exists(botDifficultyFilePath, (e) => {
+			// 	if(e) {
+			// 		fs.readFile(botDifficultyFilePath, 'utf8' , (err, data) => {
+			// 			if (err) {
+			// 			console.error(err)
+			// 			return;
+			// 			}
+			// 			data = JSON.parse(data);
 					
-						global._database.bots[b].difficulty.easy = data;
-						global._database.bots[b].difficulty.normal = data;
-						global._database.bots[b].difficulty.hard = data;
-						global._database.bots[b].difficulty.impossible = data;
+			// 			global._database.bots[b].difficulty.easy = data;
+			// 			global._database.bots[b].difficulty.normal = data;
+			// 			global._database.bots[b].difficulty.hard = data;
+			// 			global._database.bots[b].difficulty.impossible = data;
 				
-						logger.logSuccess("[MOD] TarkovCoop; Applied " + b + " ai config data");
+			// 			logger.logSuccess("[MOD] TarkovCoop; Applied " + b + " ai config data");
 
-					});
-				}
-			});
+			// 		});
+			// 	}
+			// });
 		// }
 	}
 

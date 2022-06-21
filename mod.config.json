@@ -7,6 +7,7 @@
 		"src/script.js": "TamperModLoad"
 	},
 	"required": [],
+	"Mode": "Coop",
 	"BotDifficultyMiniMod": {
 		"enable" : true
 	},
@@ -17,11 +18,11 @@
 		"enable" : true
 	},
 	"Quests": {
-		"enable": true,
+		"enable": false,
 		"enableByFolder": ["paulov", "richyg"]
 	},
 	"Items": {
-		"enable": true,
+		"enable": false,
 		"enableByFolder": ["paulov", "richyg"]
 	}
 
