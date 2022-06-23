@@ -166,14 +166,16 @@ class VVMatch {
 	}
 
 	groupSearchStart(sessionID, info) {
-		let myAccount = AccountServer.find(sessionID);
+		let myAccount = AccountServer.find(info);
 		if(myAccount.matching === undefined) myAccount.matching = {};
 		myAccount.matching.lookingForGroup = true;
+		return response_f.nullResponse();
 	}
 	groupSearchStop(sessionID, info) {
-		let myAccount = AccountServer.find(sessionID);
+		let myAccount = AccountServer.find(info);
 		if(myAccount.matching === undefined) myAccount.matching = {};
 		myAccount.matching.lookingForGroup = false;
+		return response_f.nullResponse();
 	}
 
 	getLastInvite(sessionID) {
