@@ -66,39 +66,51 @@ initResponseOverrides = function() {
 	  ResponseController.overrideRoute("/client/match/group/leave", 
 	  (url, sessionID, info) => { console.log("/client/match/group/leave"); });
 
-	
+	  ResponseController.overrideRoute("/client/match/group/delete", 
+	  (url, sessionID, info) => { console.log("/client/match/group/delete"); });
 
-	responses.staticResponses["/client/match/group/getInvites"] = 
+	  ResponseController.overrideRoute("/client/match/group/getInvites", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.getInvites(info);
-		};
+	 });
 
-	responses.staticResponses["/client/match/group/invite/accept"] = 
+
+	// responses.staticResponses["/client/match/group/getInvites"] = 
+	//   (url, sessionID, info) => { 
+	// 	return vvMatcher.getInvites(info);
+	// 	};
+
+	// responses.staticResponses["/client/match/group/invite/accept"] = 
+	ResponseController.overrideRoute("/client/match/group/invite/accept", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.groupInviteAccept(sessionID, info);
-	};
+	});
 
 	responses.staticResponses["/client/match/group/invite/cancel"] = 
 	  (url, sessionID, info) => { 
 		return vvMatcher.groupInviteDecline(sessionID, info);
 	};
 
-	responses.staticResponses["/client/match/group/invite/send"] = 
+	// responses.staticResponses["/client/match/group/invite/send"] = 
+	ResponseController.overrideRoute("/client/match/group/invite/send", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.sendInvite(sessionID, info);
-	};
+	});
 
-	responses.staticResponses["/client/match/group/looking/start"] = 
+	// responses.staticResponses["/client/match/group/looking/start"] = 
+	ResponseController.overrideRoute("/client/match/group/looking/start", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.groupSearchStart(sessionID, info);
-	};
+	});
 
-	responses.staticResponses["/client/match/group/looking/stop"] = 
+	// responses.staticResponses["/client/match/group/looking/stop"] = 
+	ResponseController.overrideRoute("/client/match/group/looking/stop", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.groupSearchStop(sessionID, info);
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/start"] = 
+	// responses.staticResponses["/client/match/group/server/start"] = 
+	ResponseController.overrideRoute("/client/match/group/server/start", 
 	  (url, info, sessionID) => { 
 
 		if(vvMatcher.servers === undefined)
@@ -122,7 +134,7 @@ initResponseOverrides = function() {
 		console.log(`New Server Started for AID ${sessionID} on IP ${ResponseController.SessionIdToIpMap[sessionID]}`);
 
     	return JSON.stringify(vvMatcher.servers[sessionID]);
-	};
+	});
 
 	ResponseController.Routes.push(
 	{
@@ -157,7 +169,8 @@ initResponseOverrides = function() {
 	  }
 	});
 
-	responses.staticResponses["/client/match/group/server/status"] = 
+	// responses.staticResponses["/client/match/group/server/status"] = 
+	ResponseController.overrideRoute("/client/match/group/server/status", 
 	  (url, info, sessionID) => { 
 		// console.log(info);
 		// console.log(sessionID);
@@ -171,9 +184,10 @@ initResponseOverrides = function() {
 
 		console.log(sessionID + ". No Server has been started for group " + info);
 		return null;
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/changestatus"] = 
+	// responses.staticResponses["/client/match/group/server/changestatus"] = 
+	ResponseController.overrideRoute("/client/match/group/server/changestatus", 
 	  (url, info, sessionID) => { 
 
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
@@ -183,9 +197,10 @@ initResponseOverrides = function() {
 		existingServer.status = info.status;
 
 		return response_f.getBody(existingServer);
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/getPlayersSpawnPoint"] = 
+	// responses.staticResponses["/client/match/group/server/getPlayersSpawnPoint"] = 
+	ResponseController.overrideRoute("/client/match/group/server/getPlayersSpawnPoint", 
 	  (url, info, sessionID) => { 
 
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
@@ -195,9 +210,10 @@ initResponseOverrides = function() {
 
 
 		return JSON.stringify(existingServer.playersSpawnPoint);
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/setPlayersSpawnPoint"] = 
+	// responses.staticResponses["/client/match/group/server/setPlayersSpawnPoint"] = 
+	ResponseController.overrideRoute("/client/match/group/server/setPlayersSpawnPoint", 
 	  (url, info, sessionID) => { 
 
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
@@ -208,7 +224,7 @@ initResponseOverrides = function() {
 		existingServer.playersSpawnPoint = info.playersSpawnPoint;
 
 		return JSON.stringify(existingServer.playersSpawnPoint);
-	};
+	});
 
 	ResponseController.RoutesToNotLog.push("/client/match/group/server/parity");
 	ResponseController.RoutesToNotLog.push("/client/match/group/server/parity/players");
@@ -851,11 +867,17 @@ ResponseController.Routes.push(
 		return response_f.getBody(status);
 	}
 	
-	responses.staticResponses["/client/match/group/create"] =
-	(url, info, sessionID) => {
-		let status = vvMatcher.groupCreate(info, sessionID);
-		return response_f.getBody(status);
-	}
+	// responses.staticResponses["/client/match/group/create"] =
+	// (url, info, sessionID) => {
+	// 	let status = vvMatcher.groupCreate(info, sessionID);
+	// 	return response_f.getBody(status);
+	// }
+	ResponseController.overrideRoute("/client/match/group/create",
+		(url, info, sessionID) => {
+			let status = vvMatcher.groupCreate(info, sessionID);
+			return response_f.getBody(status);
+		}
+	);
 
 	responses.staticResponses["/client/game/profile/singularProfile"] =
 	(url, info, sessionID) => {
@@ -887,18 +909,18 @@ ResponseController.Routes.push(
 	}
 
 
-    responses.staticResponses["/client/notifier/channel/create"] =
-	(url, info, sessionID) => {
+    // responses.staticResponses["/client/notifier/channel/create"] =
+	// (url, info, sessionID) => {
 
-        return response_f.getBody({
-            notifier: {
-              server: `${notifyServerAddressUrl}`,
-              channel_id: "testChannel",
-              url: `${notifyServerAddressUrl}`,
-            },
-            notifierServer: `${notifyServerAddressUrl}/${sessionID}`,
-          });
-	}
+    //     return response_f.getBody({
+    //         notifier: {
+    //           server: `${notifyServerAddressUrl}`,
+    //           channel_id: "testChannel",
+    //           url: `${notifyServerAddressUrl}`,
+    //         },
+    //         notifierServer: `${notifyServerAddressUrl}/${sessionID}`,
+    //       });
+	// }
 
     // responses.staticResponses["/client/game/profile/select"] =
 	// (url, info, sessionID) => {
