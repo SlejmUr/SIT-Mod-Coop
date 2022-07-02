@@ -64,16 +64,33 @@ initResponseOverrides = function() {
 	 
 
 	  ResponseController.overrideRoute("/client/match/group/leave", 
-	  (url, sessionID, info) => { console.log("/client/match/group/leave"); });
+	  (url, sessionID, info) => { 
+		console.log("/client/match/group/leave"); 
+		if(vvMatcher.groups[sessionID] !== undefined) {
+			delete vvMatcher.groups[sessionID];
+		}
+		return response_f.nullResponse();
+		});
 
 	  ResponseController.overrideRoute("/client/match/group/delete", 
-	  (url, sessionID, info) => { console.log("/client/match/group/delete"); });
+	  (url, sessionID, info) => {
+		 console.log("/client/match/group/delete");
+		 if(vvMatcher.groups[sessionID] !== undefined) {
+			delete vvMatcher.groups[sessionID];
+		}
+		 return response_f.nullResponse();
+		});
 
 	  ResponseController.overrideRoute("/client/match/group/getInvites", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.getInvites(info);
 	 });
 
+	 ResponseController.overrideRoute("/client/match/group/status", 
+	 (url, info, sessionID) => {
+		let status = vvMatcher.getGroupStatus(info, sessionID);
+		return response_f.getBody(status);
+	});
 
 	// responses.staticResponses["/client/match/group/getInvites"] = 
 	//   (url, sessionID, info) => { 
@@ -86,10 +103,10 @@ initResponseOverrides = function() {
 		return vvMatcher.groupInviteAccept(sessionID, info);
 	});
 
-	responses.staticResponses["/client/match/group/invite/cancel"] = 
+	ResponseController.overrideRoute("/client/match/group/invite/cancel", 
 	  (url, sessionID, info) => { 
 		return vvMatcher.groupInviteDecline(sessionID, info);
-	};
+	});
 
 	// responses.staticResponses["/client/match/group/invite/send"] = 
 	ResponseController.overrideRoute("/client/match/group/invite/send", 
@@ -112,7 +129,8 @@ initResponseOverrides = function() {
 	// responses.staticResponses["/client/match/group/server/start"] = 
 	ResponseController.overrideRoute("/client/match/group/server/start", 
 	  (url, info, sessionID) => { 
-
+		console.log("server start");
+		console.log(info);
 		if(vvMatcher.servers === undefined)
 			vvMatcher.servers = {};
 
@@ -237,6 +255,7 @@ initResponseOverrides = function() {
 
 		console.log(info);
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
+		//console.log(existingServer);
 		if(existingServer == null) {
 			return JSON.stringify("ERROR");
 		}
@@ -248,7 +267,7 @@ initResponseOverrides = function() {
 		// if(info.gameTime !== undefined) {
 		// 	existingServer.gameTime = info.gameTime;
 		// }
-
+		console.log(info.playerData);
 		// // handle server telling us the players in it
 		if(info.playerData !== undefined) {
 			// if the server knows about more players (which is will to start with, update)
@@ -258,7 +277,6 @@ initResponseOverrides = function() {
 						existingServer.players.push(newPlayer);
 				}
 			}
-
 		// 	// if server doesn't know about a client that has joined, update server
 		// 	if(info.playerData.length < existingServer.players.length) {
 		// 		playerDifference = true;
@@ -298,6 +316,7 @@ initResponseOverrides = function() {
 				// bots: existingServer.bots,
 				// gameTime: existingServer.gameTime
 			};
+			console.log(responseJson);
 			return JSON.stringify(responseJson);
 		// }
 		// // its just the server telling us the game time
@@ -435,7 +454,7 @@ ResponseController.Routes.push(
 }
 });
 
-	responses.staticResponses["/client/match/group/server/players/spawn"] = 
+ResponseController.overrideRoute("/client/match/group/server/players/spawn", 
 	  (url, info, sessionID) => { 
 
 		console.log(info);
@@ -452,7 +471,7 @@ ResponseController.Routes.push(
 		existingServer.players.push(info);
 
 		return JSON.stringify("OK");
-	};
+	});
 
 	ResponseController.Routes.push(
 		{
@@ -479,7 +498,7 @@ ResponseController.Routes.push(
 		}});
 
 
-	responses.staticResponses["/client/match/group/server/players/get"] = 
+	ResponseController.overrideRoute("/client/match/group/server/players/get",
 	  (url, info, sessionID) => { 
 
 		let existingServer = vvMatcher.getServerByGroupId(info.groupId);
@@ -499,15 +518,15 @@ ResponseController.Routes.push(
 			return JSON.stringify(existingServer.inGamePlayers);
 		else
 			return JSON.stringify({});
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/stop"] = 
+	ResponseController.overrideRoute("/client/match/group/server/stop", 
 	  (url, info, sessionID) => { 
 
     	return response_f.nullResponse();
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/player/add"] = 
+	ResponseController.overrideRoute("/client/match/group/server/player/add",
 	  (url, info, sessionID) => { 
 		console.log(JSON.stringify(info));
 		// console.log(JSON.stringify(sessionID));
@@ -525,9 +544,9 @@ ResponseController.Routes.push(
 		}
 
 		return response_f.nullResponse();
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/bot/add"] = 
+	ResponseController.overrideRoute("/client/match/group/server/bot/add", 
 	  (url, info, sessionID) => { 
 		if(info === undefined) {
 			console.error("No data provided");
@@ -557,9 +576,9 @@ ResponseController.Routes.push(
 		console.log(vvMatcher.servers[info["groupId"]].bots[info["botId"]]);
 
 		return response_f.nullResponse();
-	};
+	});
 
-	responses.staticResponses["/client/match/group/server/player/join"] = 
+	ResponseController.overrideRoute("/client/match/group/server/player/join",
 	  (url, info, sessionID) => { 
 		// console.log(JSON.stringify(info));
 		// console.log(JSON.stringify(sessionID));
@@ -572,7 +591,7 @@ ResponseController.Routes.push(
 		}
 
 		return response_f.nullResponse();
-	};
+	});
 
 
 	// responses.staticResponses["/client/match/group/server/bots/serverUpdate"] = 
@@ -765,7 +784,7 @@ ResponseController.Routes.push(
 	// 	return response_f.nullResponse();
 	// };
 
-	responses.staticResponses["/client/game/logout"] = 
+	ResponseController.overrideRoute("/client/game/logout", 
 	(url, info, sessionID) => { 
 		
 		// console.log(info);
@@ -787,12 +806,10 @@ ResponseController.Routes.push(
 		}
 
 		return response_f.nullResponse();
-	};
+	});
 
-	responses.staticResponses["/client/match/group/exit_from_menu"] = 
+	ResponseController.overrideRoute("/client/match/group/exit_from_menu", 
 	(url, info, sessionID) => { 
-		
-		console.log(info);
 		console.log(sessionID);
 		if(vvMatcher.servers[sessionID] !== undefined) {
 			delete vvMatcher.servers[sessionID];
@@ -812,9 +829,9 @@ ResponseController.Routes.push(
 
 
 		return response_f.nullResponse();
-	};
+	});
 
-	responses.staticResponses["/client/game/profile/list"] =
+	ResponseController.overrideRoute("/client/game/profile/list",
 	(url, info, sessionID) => {
 		// the best place to update health because its where profile is updating in client also!!!
 		if (!AccountServer.isWiped(sessionID) && profile_f.handler.profileAlreadyCreated(sessionID)) {
@@ -859,14 +876,14 @@ ResponseController.Routes.push(
 		//console.log(allProfiles);
 
 		return response_f.getBody(allProfiles);
-	}
-
+	});
+	/*
 	responses.staticResponses["/client/match/group/status"] =
 	(url, info, sessionID) => {
 		let status = vvMatcher.getGroupStatus(info, sessionID);
 		return response_f.getBody(status);
 	}
-	
+	*/
 	// responses.staticResponses["/client/match/group/create"] =
 	// (url, info, sessionID) => {
 	// 	let status = vvMatcher.groupCreate(info, sessionID);
@@ -879,7 +896,7 @@ ResponseController.Routes.push(
 		}
 	);
 
-	responses.staticResponses["/client/game/profile/singularProfile"] =
+	ResponseController.overrideRoute("/client/game/profile/singularProfile",
 	(url, info, sessionID) => {
         console.log("loading singular Profile for " + info);
 
@@ -893,20 +910,20 @@ ResponseController.Routes.push(
 		// return response_f.getBody(profile_f.handler.getCompleteProfile(sessionID));
 		// return response_f.getBody(profile);
 		return JSON.stringify(profile);
-	}
+	});
 
     const wsServerIp = server.getIp();
     const wsServerPort = server.getPort() + 2;
     // const notifyServerAddress = `ws://${wsServerIp}:${wsServerPort}`;
     const notifyServerAddressUrl = `ws://${server.getIp()}:${server.getPort()}`;
 
-	responses.staticResponses["/testANotifier"] = 
+	ResponseController.overrideRoute("/testANotifier",
 	(url, info, sessionID) => {
 
        console.log("test a notifier");
        console.log(info);
        console.log(sessionID);
-	}
+	});
 
 
     // responses.staticResponses["/client/notifier/channel/create"] =
